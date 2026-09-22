@@ -24,10 +24,9 @@ A modern, robust RESTful Web API for managing school entities (Students, Teacher
    - [4. Quantifier Operations (`Any`, `All`, `Contains`)](#4-quantifier-operations)
    - [5. Sorting / Ordering Operations (`OrderBy`, `ThenBy`, `Reverse`)](#5-sorting--ordering-operations)
    - [6. Grouping Operations (`GroupBy`)](#6-grouping-operations)
-   - [7. Partitioning Operations (`Take`, `Skip`, `Chunk`)](#7-partitioning-operations)
-   - [8. Aggregation Operations (`Count`, `Sum`, `Average`, `Min`, `Max`)](#8-aggregation-operations)
-   - [9. Set Operations (`Distinct`, `Union`, `Intersect`, `Except`)](#9-set-operations)
-   - [10. Materialization & Execution (`ToList`, `ToArray`, Deferred vs Immediate)](#10-materialization--execution-operations)
+   - [7. Aggregation Operations (`Count`, `Sum`, `Average`, `Min`, `Max`)](#7-aggregation-operations)
+   - [8. Set Operations (`Distinct`, `Union`, `Intersect`, `Except`)](#8-set-operations)
+   - [9. Materialization & Execution (`ToList`, `ToArray`, Deferred vs Immediate)](#9-materialization--execution-operations)
 5. [Getting Started & Run](#-getting-started--run)
 
 ---
@@ -613,46 +612,7 @@ var studentsPerClass = _context.Students
 
 ---
 
-### 7. Partitioning Operations
-
-Extracts a subset of elements by skipping or taking a count.
-
-#### 🔹 `.Skip()` & `.Take()` *(Pagination)*
-- **Return Type**: `IQueryable<TSource>` / `IEnumerable<TSource>`
-- **When to Use**: Implementing database pagination (`OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`).
-
-```csharp
-int pageNumber = 2;
-int pageSize = 10;
-
-var pagedStudents = _context.Students
-    .OrderBy(s => s.Id)
-    .Skip((pageNumber - 1) * pageSize) // Skip first 10
-    .Take(pageSize)                    // Take next 10
-    .ToList();
-```
-
----
-
-#### 🔹 `.Chunk()` *(.NET 6+)*
-Splits a sequence of elements into chunks of a given maximum size.
-
-- **Return Type**: `IEnumerable<TSource[]>`
-- **When to Use**: Processing large datasets in batches (e.g. sending batch emails to 50 students at a time).
-
-```csharp
-var allStudentIds = _context.Students.Select(s => s.Id).ToList();
-
-foreach (var batch in allStudentIds.Chunk(50))
-{
-    // Process 50 students at a time
-    ProcessBatch(batch);
-}
-```
-
----
-
-### 8. Aggregation Operations
+### 7. Aggregation Operations
 
 Computes a scalar value over a sequence of numbers or objects.
 
@@ -666,7 +626,7 @@ Computes a scalar value over a sequence of numbers or objects.
 
 ---
 
-### 9. Set Operations
+### 8. Set Operations
 
 Performs mathematical set comparisons between two collections.
 
@@ -685,16 +645,16 @@ var unEnrolledIds = allStudentIds.Except(enrolledStudentIds).ToList();
 
 ---
 
-### 10. Materialization & Execution Operations
+### 9. Materialization & Execution Operations
 
 Understanding **Deferred Execution** vs **Immediate Execution** is critical when working with Entity Framework Core.
 
 ```
        IQueryable<T> (Expression Tree built, NO SQL query sent yet)
                               │
-     .Where() ──► .Select() ──► .OrderBy() ──► .Take()
+               .Where() ──► .Select() ──► .OrderBy()
                               │
-                    Materialization Call
+                     Materialization Call
                               │
    ┌───────────────┬──────────┴─────┬──────────────────┐
    ▼               ▼                ▼                  ▼
@@ -706,7 +666,7 @@ Understanding **Deferred Execution** vs **Immediate Execution** is critical when
 ```
 
 #### Deferred Execution (Lazy)
-Methods like `.Where()`, `.Select()`, `.OrderBy()`, `.Skip()`, `.Take()` return an `IQueryable<T>`. They **do not execute SQL against the database** until the sequence is iterated or materialized!
+Methods like `.Where()`, `.Select()`, `.OrderBy()` return an `IQueryable<T>`. They **do not execute SQL against the database** until the sequence is iterated or materialized!
 
 #### Immediate Execution (Eager)
 Methods that trigger immediate database execution:
@@ -757,3 +717,4 @@ https://localhost:7083/swagger
 
 ## 👨‍💻 Author & Contributions
 Developed for the **School Management System API** project. Feel free to extend entities, controllers, or profiles according to your school management needs!
+
