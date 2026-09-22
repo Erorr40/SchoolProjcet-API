@@ -41,6 +41,33 @@ namespace SchoolProjcet.Controllers
             return Ok(CRDTO);
         }
 
+
+        [HttpGet("filter {id} and min gradeLevel {int}")]
+        public IActionResult FilterAndMinGradeLevel(int id, int gradelevel)
+        {
+            var classRoom = _context.ClassRooms.Where(e => e.Id == id && e.GradeLevel == gradelevel).ToList();
+            if (classRoom == null || !classRoom.Any())
+            {
+                return NotFound();
+            }
+            var CRDTO = _mapper.Map<List<ClassRoomDTO>>(classRoom);
+            return Ok(CRDTO);
+        }
+
+        [HttpGet("Frist/{id}")]
+        public IActionResult GetFristClassRoom(int id)
+        {
+            var classRoom = _context.ClassRooms.FirstOrDefault(e => e.Id == id);
+            if (classRoom == null)
+            {
+                return NotFound($"ClassRoom with id {id} not found.");
+            }
+            var CRDTO = _mapper.Map<ClassRoomDTO>(classRoom);
+            return Ok(CRDTO);
+        }
+
+
+
         [HttpPost("create")]
         public IActionResult CreateClassRoom(CreateClassRoomDTO classRoom)
         {

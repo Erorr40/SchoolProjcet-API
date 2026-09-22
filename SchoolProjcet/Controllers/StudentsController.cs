@@ -42,6 +42,53 @@ namespace SchoolProjcet.Controllers
             return Ok(studentDTO);
         }
 
+        [HttpGet("filter {id} and min gradeLevel {int}")]
+        public IActionResult Filter(int id, int minGradeLevel)
+        {
+            var students = _context.Students
+                .Include(e => e.ClassRoom)
+                .Where(s => s.ClassRoomId == id && s.ClassRoom.GradeLevel >= minGradeLevel)
+                .ToList();
+            if (students.Count == 0)
+            {
+                return NotFound($"No students found for ClassRoomId {id} with GradeLevel >= {minGradeLevel}.");
+            }
+            var studentDTOs = _mapper.Map<List<StudentDTO>>(students);
+            return Ok(studentDTOs);
+        }
+
+        [HttpGet("first/{id}")]
+        public IActionResult GetFirstByClassRoomId(int id)
+        {
+            var student = _context.Students.Include(e => e.ClassRoom).FirstOrDefault(s => s.ClassRoomId == id);
+            if (student == null)
+            {
+                return NotFound($"No students found for ClassRoomId {id}.");
+            }
+            var studentDTO = _mapper.Map<StudentDTO>(student);
+            return Ok(studentDTO);
+        }
+
+        [HttpGet("FristOrDefault/{id}")]
+        public IActionResult GetFirstOrDefaultByClassRoomId(int id)
+        {
+            var student = _context.Students.Include(e => e.ClassRoom).FirstOrDefault(s => s.ClassRoomId == id);
+            if (student == null)
+            {
+                return NotFound($"No students found for ClassRoomId {id}.");
+            }
+            var studentDTO = _mapper.Map<StudentDTO>(student);
+            return Ok(studentDTO);
+        }
+        [HttpGet("Single/{id}")]
+        public IActionResult GetSingleClassRoomById(int id)
+        {
+            var student = _context.Students.Include(e => e.ClassRoom).Single(e => e.ClassRoomId == id);
+            if (student == null)
+                return NotFound($"No student found for ClassRoomId {id}");
+            var studentDTO = _mapper.Map<StudentDTO>
+        }
+
         [HttpPost("create")]
         public IActionResult Create(CreateStudentDTO s)
         {

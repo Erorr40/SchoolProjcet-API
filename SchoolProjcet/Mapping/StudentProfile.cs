@@ -1,6 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
 using School.Models;
-using School.
 
 using SchoolProjcet.DTO.StudentDTOs;
 
