@@ -15,9 +15,9 @@ namespace SchoolProjcet.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
-        public StudentsController()
+        public StudentsController(AppDbContext context)
         {
-            _context = new AppDbContext();
+            _context = context;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<StudentProfile>()).CreateMapper();
         }
 
@@ -86,7 +86,8 @@ namespace SchoolProjcet.Controllers
             var student = _context.Students.Include(e => e.ClassRoom).Single(e => e.ClassRoomId == id);
             if (student == null)
                 return NotFound($"No student found for ClassRoomId {id}");
-            var studentDTO = _mapper.Map<StudentDTO>
+            var studentDTO = _mapper.Map<StudentDTO>(student);
+            return Ok(studentDTO);
         }
 
         [HttpPost("create")]

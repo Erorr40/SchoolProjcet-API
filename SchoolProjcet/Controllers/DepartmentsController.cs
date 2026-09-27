@@ -14,9 +14,9 @@ namespace SchoolProjcet.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
-        public DepartmentsController()
+        public DepartmentsController(AppDbContext context)
         {
-            _context = new AppDbContext();
+            _context = context;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<DepartmentProfile>()).CreateMapper();
         }
 
