@@ -5,6 +5,7 @@ using School.AppContext;
 using School.Models;
 using SchoolProjcet.DTO.EnrollmentDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -12,31 +13,31 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class EnrollmentsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IGenaricRepo<Enrollment> _enrollmentRepo;
         private readonly IMapper _mapper;
-        public EnrollmentsController(AppDbContext context)
+        public EnrollmentsController(IGenaricRepo<Enrollment> enrollmentRepo)
         {
-            _context = context;
+            _enrollmentRepo = enrollmentRepo;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<EnrollmentProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var enrollments = _context.Enrollments.ToList();
-            var enrollmentDTOs = _mapper.Map<List<Enrollment>>(enrollments);
+            var enrollments = _enrollmentRepo.GetAll();
+            var enrollmentDTOs = _mapper.Map<List<EnrollmentDTO>>(enrollments);
             return Ok(enrollmentDTOs);
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var enrollment = _context.Enrollments.Find(id);
+            var enrollment = _enrollmentRepo.GetById(id);
             if (enrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
             }
-            var enrollmentDTO = _mapper.Map<Enrollment>(enrollment);
+            var enrollmentDTO = _mapper.Map<EnrollmentDTO>(enrollment);
             return Ok(enrollmentDTO);
         }
 
@@ -53,8 +54,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest(ModelState);
             }
             var newEnrollment = _mapper.Map<Enrollment>(enrollment);
-            _context.Enrollments.Add(newEnrollment);
-            _context.SaveChanges();
+            _enrollmentRepo.Create(newEnrollment);
             return Ok(enrollment);
         }
 
@@ -71,27 +71,26 @@ namespace SchoolProjcet.Controllers
                 return BadRequest(ModelState);
             }
 
-            var existingEnrollment = _context.Enrollments.Find(id);
+            var existingEnrollment = _enrollmentRepo.GetById(id);
             if (existingEnrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
             }
             existingEnrollment = _mapper.Map(enrollment, existingEnrollment);
-            _context.SaveChanges();
+            _enrollmentRepo.Update(existingEnrollment);
             return Ok(enrollment);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingEnrollment = _context.Enrollments.Find(id);
+            var existingEnrollment = _enrollmentRepo.GetById(id);
             if (existingEnrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
             }
 
-            _context.Enrollments.Remove(existingEnrollment);
-            _context.SaveChanges();
+            _enrollmentRepo.Delete(id);
             return Ok(existingEnrollment);
         }
     }

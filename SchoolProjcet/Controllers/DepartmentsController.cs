@@ -5,6 +5,7 @@ using School.AppContext;
 using School.Models;
 using SchoolProjcet.DTO.DepartmentDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -12,18 +13,18 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class DepartmentsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        readonly IGenaricRepo<Department> _departmentRepo;
         private readonly IMapper _mapper;
-        public DepartmentsController(AppDbContext context)
+        public DepartmentsController(IGenaricRepo<Department> departmentRepo)
         {
-            _context = context;
+            _departmentRepo = departmentRepo;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<DepartmentProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var departments = _context.Departments.ToList();
+            var departments = _departmentRepo.GetAll();
             var departmentDTOs = _mapper.Map<List<DepartmentDTO>>(departments);
             return Ok(departmentDTOs);
         }
@@ -31,7 +32,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var department = _context.Departments.Find(id);
+            var department = _departmentRepo.GetById(id);
             var departmentDTO = _mapper.Map<DepartmentDTO>(department);
             if (department == null)
             {
@@ -49,8 +50,7 @@ namespace SchoolProjcet.Controllers
             }
 
             var department = _mapper.Map<Department>(depDTO);
-            _context.Departments.Add(department);
-            _context.SaveChanges();
+            _departmentRepo.Create(department);
             return Ok(department);
         }
 
@@ -62,7 +62,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Department data cannot be null.");
             }
 
-            var existingDepartment = _context.Departments.Find(id);
+            var existingDepartment = _departmentRepo.GetById(id);
             if (existingDepartment == null)
             {
                 return NotFound($"Department with id {id} not found.");
@@ -70,21 +70,20 @@ namespace SchoolProjcet.Controllers
 
             existingDepartment = _mapper.Map(depupdate, existingDepartment);
 
-            _context.SaveChanges();
-            return NoContent();
+            _departmentRepo.Update(existingDepartment);
+            return Ok(existingDepartment);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingDepartment = _context.Departments.Find(id);
+            var existingDepartment = _departmentRepo.GetById(id);
             if (existingDepartment == null)
             {
                 return NotFound($"Department with id {id} not found.");
             }
 
-            _context.Departments.Remove(existingDepartment);
-            _context.SaveChanges();
+            _departmentRepo.Delete(id);
             return NoContent();
         }
     }

@@ -6,6 +6,7 @@ using School.AppContext;
 using School.Models;
 using SchoolProjcet.DTO.SubjectDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -13,9 +14,9 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class SubjectsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IGenaricRepo<Subject> _context;
         private readonly IMapper _mapper;
-        public SubjectsController(AppDbContext context)
+        public SubjectsController(IGenaricRepo<Subject> context)
         {
             _context = context;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<SubjectProfile>()).CreateMapper();
@@ -24,7 +25,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var subjects = _context.Subjects.Include(e => e.Teacher).ToList();
+            var subjects = _context.GetAll();
             var dtos = _mapper.Map<List<SubjectDTO>>(subjects);
             return Ok(dtos);
         }
@@ -33,7 +34,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("search/{id}")]
         public IActionResult GetById(int id)
         {
-            var subject = _context.Subjects.Include(e => e.Teacher).FirstOrDefault(e => e.Id == id);
+            var subject = _context.GetById(id);
             if (subject == null)
             {
                 return NotFound($"Subject with id {id} not found.");
@@ -52,8 +53,7 @@ namespace SchoolProjcet.Controllers
 
             var entity = _mapper.Map<Subject>(subject);
 
-            _context.Subjects.Add(entity);
-            _context.SaveChanges();
+            _context.Create(entity);
             return Ok(subject);
         }
 
@@ -65,7 +65,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Subject data cannot be null.");
             }
 
-            var existingSubject = _context.Subjects.Find(id);
+            var existingSubject = _context.GetById(id);
             if (existingSubject == null)
             {
                 return NotFound($"Subject with id {id} not found.");
@@ -73,14 +73,14 @@ namespace SchoolProjcet.Controllers
 
             existingSubject = _mapper.Map(subject, existingSubject);
 
-            _context.SaveChanges();
+            _context.Update(existingSubject);
             return Ok(existingSubject);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingSubject = _context.Subjects.Include(e => e.Teacher).FirstOrDefault(e => e.Id == id);
+            var existingSubject = _context.GetById(id); 
             if (existingSubject == null)
             {
                 return NotFound($"Subject with id {id} not found.");
@@ -88,8 +88,7 @@ namespace SchoolProjcet.Controllers
 
             var dto = _mapper.Map<SubjectDTO>(existingSubject);
 
-            _context.Subjects.Remove(existingSubject);
-            _context.SaveChanges();
+            _context.Delete(id); 
             return Ok(dto);
         }
     }
