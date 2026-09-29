@@ -228,7 +228,84 @@ namespace SchoolProjcet.Mapping
             CreateMap<Student, StudentDTO>()
                 // Combine FirstName and LastName into FullName
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
-                // Map navigation property ClassRoom.Name into ClassRoomName
+                .ReverseMap();
+        }
+    }
+}
+
+```
+
+#### Approach 2: Projection with `Select` (No AutoMapper)
+
+When you only need the FullName in a specific query / endpoint, use LINQ projection to avoid creating mapper configuration:
+
+```csharp
+var list = _context.Teachers
+    .Select(t => new TeacherNameDTO
+    {
+        Id = t.Id,
+        FullName = t.FirstName + " " + t.LastName
+    })
+    .ToList();
+```
+
+This approach keeps the SQL minimal because EF Core will translate the projection to a SQL SELECT of only the required columns.
+
+#### Approach 3: Manual Mapping in Controller (Explicit)
+
+If you prefer keeping mapping explicit and simple without additional libraries, do manual mapping in the controller:
+
+```csharp
+var teachers = _context.Teachers.Include(t => t.Department).ToList();
+var dtos = teachers.Select(t => new TeacherDTO
+{
+    Id = t.Id,
+    FirstName = t.FirstName,
+    LastName = t.LastName,
+    FullName = t.FirstName + " " + t.LastName,
+    DepartmentName = t.Department?.Name
+}).ToList();
+
+return Ok(dtos);
+```
+
+---
+
+## 🔔 Latest project updates (summary)
+
+The repository has recent changes to improve DTO usage, controller responses, and dependency injection. Key updates made:
+
+- Controllers updated to use DTOs and include navigation values where helpful:
+  - `Controllers/TeachersController.cs` 
+    - Now returns `TeacherDTO` for list/detail endpoints and accepts `CreateTeacherDTO` / `UpdateTeacherDTO` for create/update.
+    - Includes Department navigation when returning data.
+  - `Controllers/SubjectsController.cs`
+    - Now returns `SubjectDTO` (includes TeacherName) and accepts `CreateSubjectDTO` / `UpdateSubjectDTO`.
+  - `Controllers/ClassRoomsController.cs`
+    - Fixed mapping bug and `ClassRoomDTO` was extended to include `StudentId` and `StudentName`.
+  - `Controllers/StudentsController.cs` already uses DTOs and includes Classroom mapping.
+
+- New DTOs added:
+  - `DTO/TeacherDTOs/TeacherDTO.cs`
+  - `DTO/TeacherDTOs/CreateTeacherDTO.cs`
+  - `DTO/TeacherDTOs/UpdateTeacherDTO.cs`
+  - `DTO/SubjectDTOs/SubjectDTO.cs`
+  - `DTO/SubjectDTOs/CreateSubjectDTO.cs`
+  - `DTO/SubjectDTOs/UpdateSubjectDTO.cs`
+
+- Repository / DI improvements:
+  - `Controllers/LinqController.cs` now uses constructor injection for `ITeacherRepo` to avoid NullReferenceException.
+  - `Program.cs` already registers `ITeacherRepo` to `TeacherRepo` and several generic repositories; ensure other controllers use DI where possible.
+
+- Build status: project compiles successfully after the updates.
+
+Recommendations:
+- Prefer constructor injection for controllers instead of instantiating `new AppDbContext()` inside controllers to support testability and consistent lifetime management.
+- Use projection (`Select`) in endpoints to minimize data loaded from the database when you only need a subset of fields.
+- Consider introducing AutoMapper via DI for larger projects to reduce repetitive mapping code.
+
+---
+
                 .ForMember(dest => dest.ClassRoomName, opt => opt.MapFrom(src => src.ClassRoom != null ? src.ClassRoom.Name : null));
 
             // Reverse map if needed (splitting FullName back into FirstName / LastName)

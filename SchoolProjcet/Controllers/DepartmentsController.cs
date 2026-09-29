@@ -13,18 +13,18 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class DepartmentsController : ControllerBase
     {
-        readonly IGenaricRepo<Department> _departmentRepo;
+        readonly IUnitOfWork _UOW;
         private readonly IMapper _mapper;
-        public DepartmentsController(IGenaricRepo<Department> departmentRepo)
+        public DepartmentsController(IUnitOfWork uow)
         {
-            _departmentRepo = departmentRepo;
+            _UOW = uow;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<DepartmentProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var departments = _departmentRepo.GetAll();
+            var departments = _UOW.Department.GetAll();
             var departmentDTOs = _mapper.Map<List<DepartmentDTO>>(departments);
             return Ok(departmentDTOs);
         }
@@ -32,7 +32,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var department = _departmentRepo.GetById(id);
+            var department = _UOW.Department.GetById(id);
             var departmentDTO = _mapper.Map<DepartmentDTO>(department);
             if (department == null)
             {
@@ -50,7 +50,7 @@ namespace SchoolProjcet.Controllers
             }
 
             var department = _mapper.Map<Department>(depDTO);
-            _departmentRepo.Create(department);
+            _UOW.Department.Create(department);
             return Ok(department);
         }
 
@@ -62,7 +62,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Department data cannot be null.");
             }
 
-            var existingDepartment = _departmentRepo.GetById(id);
+            var existingDepartment = _UOW.Department.GetById(id);
             if (existingDepartment == null)
             {
                 return NotFound($"Department with id {id} not found.");
@@ -70,20 +70,20 @@ namespace SchoolProjcet.Controllers
 
             existingDepartment = _mapper.Map(depupdate, existingDepartment);
 
-            _departmentRepo.Update(existingDepartment);
+            _UOW.Department.Update(existingDepartment);
             return Ok(existingDepartment);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingDepartment = _departmentRepo.GetById(id);
+            var existingDepartment = _UOW.Department.GetById(id);
             if (existingDepartment == null)
             {
                 return NotFound($"Department with id {id} not found.");
             }
 
-            _departmentRepo.Delete(id);
+            _UOW.Department.Delete(id);
             return NoContent();
         }
     }

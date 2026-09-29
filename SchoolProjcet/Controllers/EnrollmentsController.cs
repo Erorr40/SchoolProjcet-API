@@ -13,18 +13,18 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class EnrollmentsController : ControllerBase
     {
-        private readonly IGenaricRepo<Enrollment> _enrollmentRepo;
+        private readonly IUnitOfWork _UOW;
         private readonly IMapper _mapper;
-        public EnrollmentsController(IGenaricRepo<Enrollment> enrollmentRepo)
+        public EnrollmentsController(IUnitOfWork uow)
         {
-            _enrollmentRepo = enrollmentRepo;
+            _UOW = uow;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<EnrollmentProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var enrollments = _enrollmentRepo.GetAll();
+            var enrollments = _UOW.Enrollment.GetAll();
             var enrollmentDTOs = _mapper.Map<List<EnrollmentDTO>>(enrollments);
             return Ok(enrollmentDTOs);
         }
@@ -32,7 +32,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var enrollment = _enrollmentRepo.GetById(id);
+            var enrollment = _UOW.Enrollment.GetById(id);
             if (enrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
@@ -54,7 +54,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest(ModelState);
             }
             var newEnrollment = _mapper.Map<Enrollment>(enrollment);
-            _enrollmentRepo.Create(newEnrollment);
+            _UOW.Enrollment.Create(newEnrollment);
             return Ok(enrollment);
         }
 
@@ -71,26 +71,26 @@ namespace SchoolProjcet.Controllers
                 return BadRequest(ModelState);
             }
 
-            var existingEnrollment = _enrollmentRepo.GetById(id);
+            var existingEnrollment = _UOW.Enrollment.GetById(id);
             if (existingEnrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
             }
             existingEnrollment = _mapper.Map(enrollment, existingEnrollment);
-            _enrollmentRepo.Update(existingEnrollment);
+            _UOW.Enrollment.Update(existingEnrollment);
             return Ok(enrollment);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingEnrollment = _enrollmentRepo.GetById(id);
+            var existingEnrollment = _UOW.Enrollment.GetById(id);
             if (existingEnrollment == null)
             {
                 return NotFound($"Enrollment with id {id} not found.");
             }
 
-            _enrollmentRepo.Delete(id);
+            _UOW.Enrollment.Delete(id);
             return Ok(existingEnrollment);
         }
     }

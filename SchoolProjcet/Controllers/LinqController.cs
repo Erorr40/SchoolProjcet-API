@@ -9,11 +9,15 @@ namespace SchoolProjcet.Controllers
     public class LinqController : ControllerBase
     {
         private readonly ITeacherRepo _teacherRepo;
+        private readonly ISubject _subjectRepo;
 
-        public LinqController(ITeacherRepo teacherRepo)
+        public LinqController(ITeacherRepo teacherRepo, ISubject subjectRepo)
         {
-            _teacherRepo = teacherRepo;
+            _teacherRepo = teacherRepo ;
+            _subjectRepo = subjectRepo ;
         }
+
+        //1
         [HttpGet("getteacherswithdepartmentandminsalary/{departmentId}/{minSalary}")]
         public IActionResult GetTeacherWithDepartmentAndMinSalary(int departmentId, decimal minSalary)
         {
@@ -24,5 +28,14 @@ namespace SchoolProjcet.Controllers
             }
             return Ok(teachers);
         }
+
+        //2
+        [HttpGet("FristSubjectbySpecifiedTeacherOrderedbySubjectName")]
+        public IActionResult GetFristSubjectBySpecifiedTeacherOrderedBySubjectName (int teacherId)
+        {
+            return Ok(_subjectRepo.FristSubjectbySpecifiedTeacherOrderedbySubjectName(teacherId));
+
+        }
+
     }
 }

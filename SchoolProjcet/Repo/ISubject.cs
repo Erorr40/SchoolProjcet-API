@@ -1,6 +1,9 @@
-﻿namespace SchoolProjcet.Repo
+﻿using School.Models;
+
+namespace SchoolProjcet.Repo
 {
-    public interface ISubject
+    public interface ISubject : IGenaricRepo<Subject>
     {
+        public IEnumerable<Subject> FristSubjectbySpecifiedTeacherOrderedbySubjectName(int teacherId);
     }
 }
