@@ -27,6 +27,7 @@ namespace SchoolProjcet
             builder.Services.AddScoped<IGenaricRepo<Student>, GenericRepo<Student>>();
             builder.Services.AddScoped<IGenaricRepo<Subject>, GenericRepo<Subject>>();
             builder.Services.AddScoped<IGenaricRepo<Enrollment>, GenericRepo<Enrollment>>();
+            builder.Services.AddScoped<ITeacherRepo, TeacherRepo>();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();

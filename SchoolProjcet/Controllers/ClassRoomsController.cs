@@ -14,9 +14,9 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class ClassRoomsController : ControllerBase
     {
-        readonly IGenaricRepo<ClassRoom> _classRoomRepo;
+        readonly UnitOfWork _classRoomRepo;
         private readonly IMapper _mapper;
-        public ClassRoomsController(IGenaricRepo<ClassRoom> classRoomRepo)
+        public ClassRoomsController(UnitOfWork classRoomRepo)
         {
             _classRoomRepo = classRoomRepo;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ClassRoomProfile>()).CreateMapper();
@@ -25,7 +25,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet]
         public IActionResult GetClassRooms()
         {
-            var classRooms = _classRoomRepo.GetAll();
+            var classRooms = _classRoomRepo.ClassRoom.GetAll();
             var CRDTO = _mapper.Map<List<ClassRoomDTO>>(classRooms);
             return Ok(CRDTO);
         }
@@ -33,7 +33,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetClassRoomById(int id)
         {
-            var classRoom = _classRoomRepo.GetById(id);
+            var classRoom = _classRoomRepo.ClassRoom.GetById(id);
             if (classRoom == null)
             {
                 return NotFound($"ClassRoom with id {id} not found.");
@@ -52,7 +52,7 @@ namespace SchoolProjcet.Controllers
 
             var newClassRoom = _mapper.Map<ClassRoom>(classRoom);
 
-            _classRoomRepo.Create(newClassRoom);
+            _classRoomRepo.ClassRoom.Create(newClassRoom);
             return CreatedAtAction(nameof(GetClassRoomById), new { id = newClassRoom.Id }, classRoom);
         }
 

@@ -5,8 +5,8 @@ namespace SchoolProjcet.Repo
 {
     public class GenericRepo<T> : IGenaricRepo<T> where T : class
     {
-        readonly AppDbContext _context;
-        readonly DbSet<T> _db;
+        protected readonly AppDbContext _context;
+        protected readonly DbSet<T> _db;
 
         public GenericRepo(AppDbContext context)
         {
@@ -20,7 +20,7 @@ namespace SchoolProjcet.Repo
             _context.SaveChanges();
         }
 
-        public IEnumerable<T> GetAll()
+        public virtual IEnumerable<T> GetAll()
         {
             return _db.ToList();
         }
