@@ -21,5 +21,29 @@ namespace SchoolProjcet.Repo
                 .Take(1)
                 .ToList();
         }
+        public Subject LastSubjectBySpecifiedTeacherOrderedbySubjectID(int teacherId)
+        {
+            return
+                _db
+                .Include(e => e.Enrollments)
+                .Include(e => e.Teacher)
+                .Where(s => s.TeacherId == teacherId)
+                .OrderByDescending(s => s.Id)
+                .FirstOrDefault();
+        }
+
+        public bool CheckSpecifiedSubjectIDExistInaListOfSubjects(int subjectId)
+        {
+            return _db.Where(e => e.Id == subjectId).Any();
+        }
+
+        public List<Subject> GetAllSubjectsBySpecifiedTeacher(int teacherId)
+        {
+            return _db
+                .Include(e => e.Enrollments)
+                .Include(e => e.Teacher)
+                .Where(s => s.TeacherId == teacherId)
+                .ToList();
+        }
     }
 }

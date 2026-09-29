@@ -18,7 +18,7 @@ namespace SchoolProjcet.Repo
         public IGenaricRepo<Department> Department { get; }
 
         public IGenaricRepo<Student> Student { get; }
-        public IGenaricRepo<Enrollment> Enrollment { get; }
+        public IEnrollmentRepo Enrollment { get; }
         public ITeacherRepo Teacher { get; }
 
         public ISubject Subject { get; }
