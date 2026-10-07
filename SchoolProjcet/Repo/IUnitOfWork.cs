@@ -10,6 +10,7 @@ namespace SchoolProjcet.Repo
         public ITeacherRepo Teacher { get; }
         public ISubject Subject { get; }
         public IClassRoomRepo ClassRoom { get; }
+        public IUserRepo Users { get;  }
 
         public void Save();
     }

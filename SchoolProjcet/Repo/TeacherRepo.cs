@@ -44,5 +44,10 @@ namespace SchoolProjcet.Repo
         {
             return _db.Include(e => e.Department).Include(e => e.Subjects).Where(e => e.DepartmentId == departmentId).Select(e => new Teacher { Id = e.Id});
         }
+
+        public IEnumerable<Teacher> GetAllSubjectsBySpecifiedTeacher(int teacherId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

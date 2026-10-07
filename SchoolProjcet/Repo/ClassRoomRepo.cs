@@ -30,5 +30,10 @@ namespace SchoolProjcet.Repo
                 .Where(c => c.GradeLevel == gradeLevel)
                 .All(c => c.Capacity >= capacity);
         }
+
+        public ClassRoom GetClassRoomByName(string name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

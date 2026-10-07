@@ -76,9 +76,9 @@ namespace SchoolProjcet.Controllers
 
         //8
         [HttpGet("OrderAndReturnSpecifiedZeroIndex")]
-        public IActionResult OrderAndReturnSpecifiedZeroIndex(int teacherId)
+        public IActionResult OrderAndReturnSpecifiedZeroIndex()
         {
-            return Ok(_IOW.ClassRoom.OrderAndReturnSpecifiedZeroIndex(teacherId));
+            return Ok(_IOW.ClassRoom.OrderAndReturnSpecifiedZeroIndex());
         }
 
         //9

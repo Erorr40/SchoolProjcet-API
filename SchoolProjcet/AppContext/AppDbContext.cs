@@ -1,12 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using School.Models;
+using SchoolProjcet.Models;
 
 namespace School.AppContext
 {
     public class AppDbContext : DbContext
     {
 
-        public AppDbContext(DbContextOptions options) : base(options) { }
+        public AppDbContext(DbContextOptions options) : base(options)
+        {
+        }
+
+
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
@@ -313,7 +318,7 @@ namespace School.AppContext
 
         public DbSet<Enrollment> Enrollments { get; set; }
 
-
+        public DbSet<User> Users { get; set; }
 
     }
 }
