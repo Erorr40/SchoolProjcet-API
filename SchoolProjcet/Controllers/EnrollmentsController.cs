@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using School.AppContext;
@@ -9,6 +10,7 @@ using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EnrollmentsController : ControllerBase
