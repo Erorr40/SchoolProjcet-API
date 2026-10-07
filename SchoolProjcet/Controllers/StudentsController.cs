@@ -6,6 +6,7 @@ using School.AppContext;
 using School.Models;
 using SchoolProjcet.DTO.StudentDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -13,18 +14,18 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IGenaricRepo<Student> _studentRepo;
         private readonly IMapper _mapper;
-        public StudentsController()
+        public StudentsController(IGenaricRepo<Student> studentRepo)
         {
-            _context = new AppDbContext();
+            _studentRepo = studentRepo;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<StudentProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var students = _context.Students.Include(e => e.ClassRoom).ToList();
+            var students = _studentRepo.GetAll();
             var studentDTOs = _mapper.Map<List<StudentDTO>>(students);
             return Ok(studentDTOs);
         }
@@ -32,7 +33,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var student = _context.Students.Include(e => e.ClassRoom).FirstOrDefault(e => e.Id == id);
+            var student = _studentRepo.GetById(id);
             if (student == null)
             {
                 return NotFound($"Student with id {id} not found.");
@@ -40,53 +41,6 @@ namespace SchoolProjcet.Controllers
             var studentDTO = _mapper.Map<StudentDTO>(student);
 
             return Ok(studentDTO);
-        }
-
-        [HttpGet("filter {id} and min gradeLevel {int}")]
-        public IActionResult Filter(int id, int minGradeLevel)
-        {
-            var students = _context.Students
-                .Include(e => e.ClassRoom)
-                .Where(s => s.ClassRoomId == id && s.ClassRoom.GradeLevel >= minGradeLevel)
-                .ToList();
-            if (students.Count == 0)
-            {
-                return NotFound($"No students found for ClassRoomId {id} with GradeLevel >= {minGradeLevel}.");
-            }
-            var studentDTOs = _mapper.Map<List<StudentDTO>>(students);
-            return Ok(studentDTOs);
-        }
-
-        [HttpGet("first/{id}")]
-        public IActionResult GetFirstByClassRoomId(int id)
-        {
-            var student = _context.Students.Include(e => e.ClassRoom).FirstOrDefault(s => s.ClassRoomId == id);
-            if (student == null)
-            {
-                return NotFound($"No students found for ClassRoomId {id}.");
-            }
-            var studentDTO = _mapper.Map<StudentDTO>(student);
-            return Ok(studentDTO);
-        }
-
-        [HttpGet("FristOrDefault/{id}")]
-        public IActionResult GetFirstOrDefaultByClassRoomId(int id)
-        {
-            var student = _context.Students.Include(e => e.ClassRoom).FirstOrDefault(s => s.ClassRoomId == id);
-            if (student == null)
-            {
-                return NotFound($"No students found for ClassRoomId {id}.");
-            }
-            var studentDTO = _mapper.Map<StudentDTO>(student);
-            return Ok(studentDTO);
-        }
-        [HttpGet("Single/{id}")]
-        public IActionResult GetSingleClassRoomById(int id)
-        {
-            var student = _context.Students.Include(e => e.ClassRoom).Single(e => e.ClassRoomId == id);
-            if (student == null)
-                return NotFound($"No student found for ClassRoomId {id}");
-            var studentDTO = _mapper.Map<StudentDTO>
         }
 
         [HttpPost("create")]
@@ -98,8 +52,7 @@ namespace SchoolProjcet.Controllers
             }
             var student = _mapper.Map<Student>(s);
 
-            _context.Students.Add(student);
-            _context.SaveChanges();
+            _studentRepo.Create(student);
             return Ok(s);
         }
 
@@ -111,7 +64,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Student data cannot be null.");
             }
 
-            var existingStudent = _context.Students.Find(id);
+            var existingStudent = _studentRepo.GetById(id);
             if (existingStudent == null)
             {
                 return NotFound($"Student with id {id} not found.");
@@ -119,22 +72,21 @@ namespace SchoolProjcet.Controllers
 
             existingStudent = _mapper.Map(student, existingStudent);
 
-            _context.SaveChanges();
+            _studentRepo.Update(existingStudent);
             return Ok(student);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingStudent = _context.Students.Find(id);
+            var existingStudent = _studentRepo.GetById(id);
             if (existingStudent == null)
             {
                 return NotFound($"Student with id {id} not found.");
             }
             var s = _mapper.Map<StudentDTO>(existingStudent);
 
-            _context.Students.Remove(existingStudent);
-            _context.SaveChanges();
+            _studentRepo.Delete(id);
             return Ok(s);
         }
     }

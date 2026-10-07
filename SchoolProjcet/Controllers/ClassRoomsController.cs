@@ -6,6 +6,7 @@ using School.AppContext;
     using School.Models;
 using SchoolProjcet.DTO.ClassRoomsDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -13,18 +14,18 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class ClassRoomsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        readonly IGenaricRepo<ClassRoom> _classRoomRepo;
         private readonly IMapper _mapper;
-        public ClassRoomsController()
+        public ClassRoomsController(IGenaricRepo<ClassRoom> classRoomRepo)
         {
-            _context = new AppDbContext();
+            _classRoomRepo = classRoomRepo;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ClassRoomProfile>()).CreateMapper();
         }
 
         [HttpGet]
         public IActionResult GetClassRooms()
         {
-            var classRooms = _context.ClassRooms.Include(e => e.Students).ToList();
+            var classRooms = _classRoomRepo.GetAll();
             var CRDTO = _mapper.Map<List<ClassRoomDTO>>(classRooms);
             return Ok(CRDTO);
         }
@@ -32,7 +33,7 @@ namespace SchoolProjcet.Controllers
         [HttpGet("{id}")]
         public IActionResult GetClassRoomById(int id)
         {
-            var classRoom = _context.ClassRooms.Include(e => e.Students).FirstOrDefault(e => e.Id == id);
+            var classRoom = _classRoomRepo.GetById(id);
             if (classRoom == null)
             {
                 return NotFound($"ClassRoom with id {id} not found.");
@@ -40,33 +41,6 @@ namespace SchoolProjcet.Controllers
             var CRDTO = _mapper.Map<ClassRoomDTO>(classRoom);
             return Ok(CRDTO);
         }
-
-
-        [HttpGet("filter {id} and min gradeLevel {int}")]
-        public IActionResult FilterAndMinGradeLevel(int id, int gradelevel)
-        {
-            var classRoom = _context.ClassRooms.Where(e => e.Id == id && e.GradeLevel == gradelevel).ToList();
-            if (classRoom == null || !classRoom.Any())
-            {
-                return NotFound();
-            }
-            var CRDTO = _mapper.Map<List<ClassRoomDTO>>(classRoom);
-            return Ok(CRDTO);
-        }
-
-        [HttpGet("Frist/{id}")]
-        public IActionResult GetFristClassRoom(int id)
-        {
-            var classRoom = _context.ClassRooms.FirstOrDefault(e => e.Id == id);
-            if (classRoom == null)
-            {
-                return NotFound($"ClassRoom with id {id} not found.");
-            }
-            var CRDTO = _mapper.Map<ClassRoomDTO>(classRoom);
-            return Ok(CRDTO);
-        }
-
-
 
         [HttpPost("create")]
         public IActionResult CreateClassRoom(CreateClassRoomDTO classRoom)
@@ -76,14 +50,9 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("ClassRoom data cannot be null.");
             }
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             var newClassRoom = _mapper.Map<ClassRoom>(classRoom);
 
-            _context.ClassRooms.Add(newClassRoom);
-            _context.SaveChanges();
+            _classRoomRepo.Create(newClassRoom);
             return CreatedAtAction(nameof(GetClassRoomById), new { id = newClassRoom.Id }, classRoom);
         }
 
@@ -95,27 +64,26 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("ClassRoom data cannot be null.");
             }
 
-            var existingClassRoom = _context.ClassRooms.Find(id);
+            var existingClassRoom = _classRoomRepo.GetById(id);
             if (existingClassRoom == null)
             {
                 return NotFound($"ClassRoom with id {id} not found.");
             }
             existingClassRoom = _mapper.Map(classRoom, existingClassRoom);
-            _context.SaveChanges();
+            _classRoomRepo.Update(existingClassRoom);
             return Ok(existingClassRoom);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult DeleteClassRoom(int id)
         {
-            var existingClassRoom = _context.ClassRooms.Find(id);
+            var existingClassRoom = _classRoomRepo.GetById(id);
             if (existingClassRoom == null)
             {
                 return NotFound($"ClassRoom with id {id} not found.");
             }
 
-            _context.ClassRooms.Remove(existingClassRoom);
-            _context.SaveChanges();
+            _classRoomRepo.Delete(id);
             return Ok(existingClassRoom);
         }
     }

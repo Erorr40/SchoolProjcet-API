@@ -6,12 +6,12 @@ namespace School.AppContext
     public class AppDbContext : DbContext
     {
 
+        public AppDbContext(DbContextOptions options) : base(options) { }
 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("");
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseSqlServer("Data Source=(localdb)\\ProjectModels;Initial Catalog=SchoolProject;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

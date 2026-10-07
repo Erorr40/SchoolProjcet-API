@@ -6,6 +6,7 @@ using School.AppContext;
 using School.Models;
 using SchoolProjcet.DTO.TeacherDTOs;
 using SchoolProjcet.Mapping;
+using SchoolProjcet.Repo;
 
 namespace SchoolProjcet.Controllers
 {
@@ -13,11 +14,11 @@ namespace SchoolProjcet.Controllers
     [ApiController]
     public class TeachersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ITeacherRepo _context;
         private readonly IMapper _mapper;
-        public TeachersController()
+        public TeachersController(ITeacherRepo context)
         {
-            _context = new AppDbContext();
+            _context = context;
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<TeacherProfile>()).CreateMapper();
 
         }
@@ -25,21 +26,16 @@ namespace SchoolProjcet.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var teachers = _context.Teachers.Include(e => e.Department).ToList();
+            var teachers = _context.GetAll();
             var teachermap = _mapper.Map<List<TeacherDTO>>(teachers);
             return Ok(teachermap);
         }
 
-        [HttpGet("{id}")]
-        [HttpGet("search/{id}")]
-        public IActionResult GetById(int id)
+        [HttpGet("getbydepartment/{departmentId}")]
+        public IActionResult GetByDepartment(int departmentId)
         {
-            var teacher = _context.Teachers.Include(e => e.Department).FirstOrDefault(e => e.Id == id);
-            if (teacher == null)
-            {
-                return NotFound($"Teacher with id {id} not found.");
-            }
-            var teachermap = _mapper.Map<TeacherDTO>(teacher);
+            var teachers = _context.GetTeachersByDepartmentId(departmentId);
+            var teachermap = _mapper.Map<List<TeacherDTO>>(teachers);
             return Ok(teachermap);
         }
 
@@ -51,8 +47,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Teacher data cannot be null.");
             }
             var d = _mapper.Map<Teacher>(teacher);
-            _context.Teachers.Add(d);
-            _context.SaveChanges();
+            _context.Create(d);
             return Ok(teacher);
         }
 
@@ -64,7 +59,7 @@ namespace SchoolProjcet.Controllers
                 return BadRequest("Teacher data cannot be null.");
             }
 
-            var existingTeacher = _context.Teachers.Find(id);
+            var existingTeacher = _context.GetById(id);
             if (existingTeacher == null)
             {
                 return NotFound($"Teacher with id {id} not found.");
@@ -78,14 +73,14 @@ namespace SchoolProjcet.Controllers
             existingTeacher.DepartmentId = teacher.DepartmentId;
             var teachermap = _mapper.Map<TeacherDTO>(existingTeacher);
 
-            _context.SaveChanges();
+            _context.Update(existingTeacher);
             return Ok(teachermap);
         }
 
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            var existingTeacher = _context.Teachers.Include(e => e.Department).FirstOrDefault(e => e.Id == id);
+            var existingTeacher = _context.GetById(id);
             if (existingTeacher == null)
             {
                 return NotFound($"Teacher with id {id} not found.");
@@ -103,8 +98,7 @@ namespace SchoolProjcet.Controllers
                 DepartmentName = existingTeacher.Department?.Name
             };
 
-            _context.Teachers.Remove(existingTeacher);
-            _context.SaveChanges();
+            _context.Delete(id);
             return Ok(dto);
         }
     }
